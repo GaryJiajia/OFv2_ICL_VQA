@@ -6,9 +6,9 @@ The repository for our paper:
 
 # Table of Contents
 - [Preparation](#Preparation)
-  * [Environment](#1.Environment)
-  * [Datasets](#2.Datasets)
-  * [Model](#3.Model)
+  * [Environment](#Environment)
+  * [Datasets](#Datasets)
+  * [Model](#Model)
 - [Usage](#usage)
   * [Demo test](#Demo-test)
   * [Diverse Demonstrations Retrieval Methods](#Diverse-Demonstrations-Retrieval-Methods)
@@ -20,7 +20,7 @@ The repository for our paper:
 
 # Preparation
 we use OpenFlamingo and its framework to implement various retrieval strategies on three different VQA datasets.
-## 1.Environment
+## Environment
 Create a conda environment for running the following code. It is used for anonymous submit now, and it will fix in Formal version.
 
 ```
@@ -29,7 +29,7 @@ cd xxxx
 conda env create -f environment.yml
 conda activate ofv2
 ```
-## 2.Datasets
+## Datasets
 We use [VQAv2](https://visualqa.org/download.html), [OK-VQA](https://okvqa.allenai.org/download.html), and [VizWiz](https://vizwiz.org/tasks-and-datasets/vqa/) datasets. You need to download the files of these datasets yourself, including the Images and Annotations. 
 
 To run evaluations on OKVQA you will need to run the following command:
@@ -37,7 +37,7 @@ To run evaluations on OKVQA you will need to run the following command:
 import nltk
 nltk.download('wordnet')
 ```
-## 3.Model
+## Model
 **OpenFlamingo** is a multimodal language model that can be used for a variety of tasks. It is trained on a large multimodal dataset (e.g. Multimodal C4) and can be used to generate text conditioned on interleaved images/text. You can read its [blog](https://laion.ai/blog/open-flamingo-v2/) and [code](https://github.com/mlfoundations/open_flamingo) for more information. 
 
 
@@ -128,10 +128,6 @@ print(tokenizer.decode(generated_text[0]))
 
 ## Diverse Demonstrations Retrieval Methods
 An example evaluation script is at `open_flamingo/scripts/run_vqav2.sh`, as follows:
-
-## Downloading pretrained weights
-
-To instantiate an OpenFlamingo model with one of our released weights, initialize the model as above and use the following code. You can use it on one RTX 3090 GPU with FP16 precision. 
 ```sh
 DEVICE=0 # gpu number
 
@@ -168,7 +164,7 @@ python open_flamingo/eval/evaluate_vqa.py \
     
 echo "evaluation complete! results written to $RESULTS_FILE"
 ```
-Change parameters according to your needs and Use following command:
+Change parameters according to your needs and Use following command, you can use it on one RTX 3090 GPU with FP16 precision. 
 ```
 cd this file
 bash open_flamingo/scripts/run_vqav2.sh
