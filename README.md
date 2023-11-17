@@ -14,7 +14,6 @@ The repository for our paper:
   * [Diverse Demonstrations Retrieval Methods](#Diverse-Demonstrations-Retrieval-Methods)
 
 - [Acknowledgments](#acknowledgments)
-- [Citing](#citing)
 
 
 
@@ -181,11 +180,6 @@ control_signals = {"clip": True, # If clip==False, it means the RS.
                    "None_ICE":False, # In 0-shot setting, should we offer demonstration for the Model.
                    "order": "order"} # The order of the demonstrations. order/reverse
 ```
-
-# Evaluation
-An example evaluation script is at `open_flamingo/scripts/run_eval.sh`. Please see our [evaluation README](https://github.com/mlfoundations/open_flamingo/tree/main/open_flamingo/eval) for more details.
-
-
 
 # Acknowledgments
 This code is based on [the second version of OpenFlamingo](https://github.com/mlfoundations/open_flamingo).
