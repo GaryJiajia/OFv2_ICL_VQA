@@ -168,6 +168,10 @@ Change parameters according to your needs and Use following command, you can use
 cd this file
 bash open_flamingo/scripts/run_vqav2.sh
 ```
+
+Before running the above file, you have to run the **retrieval/img2img_clip_style.py** to get the **"validation_xxx.npy"** retrival results file which is used in [eval/eval_datasets.py](https://github.com/GaryJiajia/OFv2_ICL_VQA/blob/caf62954f6ffce8599131d32f2a982a43681bd1c/open_flamingo/eval/eval_datasets.py#L24-L32). For more details, you can see the answer in this [issue](https://github.com/GaryJiajia/OFv2_ICL_VQA/issues/1#issuecomment-1888536124).
+
+
 If you need to use different retrieval methods, you can change the parameters of `control_signals` in `open_flamingo/eval/evaluate_vqa.py`.
 ``` python
 control_signals = {"clip": True, # If clip==False, it means the RS.
