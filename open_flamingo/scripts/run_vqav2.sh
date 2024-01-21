@@ -18,8 +18,8 @@ python open_flamingo/eval/evaluate_vqa.py \
     --vqav2_train_questions_json_path "vqav2/v2_OpenEnded_mscoco_train2014_questions.json" \
     --vqav2_train_annotations_json_path  "vqav2/v2_mscoco_train2014_annotations.json" \
     --vqav2_test_image_dir_path "mscoco2014/val2014/" \
-    --vqav2_test_questions_json_path "vqav2/v2_mscoco_val2014_question_subdata.json" \
-    --vqav2_test_annotations_json_path "vqav2/v2_mscoco_val2014_annotations_subdata.json" \
+    --vqav2_test_questions_json_path "vqav2/v2_OpenEnded_mscoco_val2014_questions" \
+    --vqav2_test_annotations_json_path "vqav2/v2_mscoco_val2014_annotations.json" \
     --results_file $RESULTS_FILE \
     --num_samples 5000\
     --shots 4 8 16 32\

@@ -23,10 +23,11 @@ we use OpenFlamingo and its framework to implement various retrieval strategies 
 Create a conda environment for running the following code. It is used for anonymous submit now, and it will fix in Formal version.
 
 ```
-git clone xxxx
-cd xxxx
+git clone https://github.com/GaryJiajia/OFv2_ICL_VQA.git
+cd OFv2_ICL_VQA
 conda env create -f environment.yml
 conda activate ofv2
+pip install git+https://github.com/openai/CLIP.git
 ```
 ## Datasets
 We use [VQAv2](https://visualqa.org/download.html), [OK-VQA](https://okvqa.allenai.org/download.html), and [VizWiz](https://vizwiz.org/tasks-and-datasets/vqa/) datasets. You need to download the files of these datasets yourself, including the Images and Annotations. 
@@ -148,8 +149,8 @@ python open_flamingo/eval/evaluate_vqa.py \
     --vqav2_train_questions_json_path "vqav2/v2_OpenEnded_mscoco_train2014_questions.json" \
     --vqav2_train_annotations_json_path  "vqav2/v2_mscoco_train2014_annotations.json" \
     --vqav2_test_image_dir_path "mscoco2014/val2014/" \
-    --vqav2_test_questions_json_path "vqav2/v2_mscoco_val2014_question_subdata.json" \
-    --vqav2_test_annotations_json_path "vqav2/v2_mscoco_val2014_annotations_subdata.json" \
+    --vqav2_test_questions_json_path "vqav2/v2_OpenEnded_mscoco_val2014_questions" \
+    --vqav2_test_annotations_json_path "vqav2/v2_mscoco_val2014_annotations.json" \
     --results_file $RESULTS_FILE \
     --num_samples 5000\
     --shots 4 8 16 32\
