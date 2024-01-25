@@ -267,10 +267,10 @@ def retrieve_vqa_vqav2():
                 print("Doing SQA search...")
                 values_caps, indices_caps = index.search(test_text_features_qa.cpu(), 100)
                 np.save("caption_caption_indices_caps_qa.npy", indices_caps)
-                np.save("caption_caption_indices_caps_qa.npy", values_caps)
+                np.save("caption_caption_values_caps_qa.npy", values_caps)
                 print("Done.")
             else:
-                values_caps = np.load("caption_caption_indices_caps_qa.npy")
+                values_caps = np.load("caption_caption_values_caps_qa.npy")
                 indices_caps = np.load("caption_caption_indices_caps_qa.npy")
 
             # SQQR
