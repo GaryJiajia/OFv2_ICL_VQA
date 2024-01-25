@@ -273,7 +273,7 @@ def sample_batch_demos_from_query_set(query_set, num_samples, batch, retrieval_t
         return [random.sample(list(query_set), num_samples) for _ in range(len(batch["image"]))]
     else:
         if retrieval_type == "mix_img_cap":
-            return [[query_set.id2item(id) for id in batch["clip_images"][i][:(num_samples//2)] + batch["clip_captions"][i][:(num_samples//2)]] for i in range(len(batch["image"]))]
+            return [[query_set.id2item(id) for id in batch["SI"][i][:(num_samples//2)] + batch["SQ"][i][:(num_samples//2)]] for i in range(len(batch["image"]))]
         elif retrieval_type == "DQQR-TAG":
             return [[query_set.id2item(id) for id in Get_DQQR_TAGs_id(str(batch["question_id"][i]), num_samples)] for i in range(len(batch["image"]))]
         else:
