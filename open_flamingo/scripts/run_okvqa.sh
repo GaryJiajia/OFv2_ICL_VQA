@@ -6,7 +6,7 @@ RESULTS_FILE="results_${RANDOM_ID}.json"
 export MASTER_ADDR='localhost'
 export MASTER_PORT='10000'
 
-python open_flamingo/eval/evaluate_okvqa.py \
+python open_flamingo/eval/evaluate_vqa.py \
     --retrieval_name $RANDOM_ID \
     --lm_path "Path for mpt-7b" \
     --lm_tokenizer_path "Path for mpt-7b" \

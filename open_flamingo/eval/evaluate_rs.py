@@ -288,11 +288,6 @@ def evaluate_vqa(
             else postprocess_vqa_generation
         )
 
-        # if control_signals["declaration"]:
-        # process_function = postprocess_vqa_new_generation
-
-        # process_function = postprocess_ok_vqa_generation
-
         new_predictions = map(process_function, outputs)
 
         for new_prediction, sample_id, batch_text, batch_demo_samples, question in zip(new_predictions, batch["question_id"], batch_text, batch_demo_samples, batch["question"]):

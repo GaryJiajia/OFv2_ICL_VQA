@@ -6,7 +6,7 @@ RESULTS_FILE="results_${RANDOM_ID}.json"
 export MASTER_ADDR='localhost'
 export MASTER_PORT='10000'
 
-python open_flamingo/eval/evaluate_vizwiz.py \
+python open_flamingo/eval/evaluate_vqa.py \
     --model "open_flamingo" \
     --lm_path "Path for mpt-7b" \
     --lm_tokenizer_path "Path for mpt-7b" \
@@ -28,6 +28,7 @@ python open_flamingo/eval/evaluate_vizwiz.py \
     --batch_size 1 \
     --cross_attn_every_n_layers 4 \
     --precision fp16 \
+    --dataset_name vizwiz \
     --eval_vizwiz
 
 echo "evaluation complete! results written to ${RESULTS_FILE}"

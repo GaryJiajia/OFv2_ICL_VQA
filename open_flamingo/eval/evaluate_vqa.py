@@ -5,6 +5,7 @@ import os
 import random
 import uuid
 from collections import defaultdict
+import copy
 
 from einops import repeat
 import more_itertools
@@ -60,7 +61,6 @@ def main():
     # set up distributed evaluation
     args.local_rank, args.rank, args.world_size = world_info_from_env()
     device_id = init_distributed_device(args)
-    # device_id = init_distributed_device(args, eval_model.device)
     print(device_id)
     eval_model.set_device(device_id)
     eval_model.init_distributed()
@@ -72,31 +72,38 @@ def main():
         raise ValueError("Number of trial seeds must be == number of trials.")
 
     results = defaultdict(list)
+    datastes_name = (
+    "vizwiz" if args.eval_vizwiz 
+    else "ok_vqa" if args.eval_ok_vqa 
+    else "vqav2" if args.eval_vqav2
+    else None
+    )
+    if datastes_name == None:
+        raise ValueError("Unsupported dataset")
+    
     # results["prompt"].append(get_vqa_declaration_prompt("question","answer"))
     # results["prompt"].append(get_vqa_and_declaration_prompt("question","declaration","answer"))
 
-    if args.eval_vqav2:
-        print("Evaluating on VQAv2...")
-        for shot in args.shots:
-            scores = []
-            for seed, trial in zip(args.trial_seeds, range(args.num_trials)):
-                vqa_score = evaluate_vqa(
-                    args=args,
-                    eval_model=eval_model,
-                    num_shots=shot,
-                    seed=seed,
-                    dataset_name="vqav2",
-                )
-                if args.rank == 0:
-                    print(f"Shots {shot} Trial {trial} VQA score: {vqa_score}")
-                    scores.append(vqa_score)
-
+    print(f"Evaluating on {datastes_name}...")
+    for shot in args.shots:
+        scores = []
+        for seed, trial in zip(args.trial_seeds, range(args.num_trials)):
+            vqa_score = evaluate_vqa(
+                args=args,
+                eval_model=eval_model,
+                num_shots=shot,
+                seed=seed,
+                dataset_name=datastes_name,
+            )
             if args.rank == 0:
-                print(f"Shots {shot} Mean VQA score: {np.nanmean(scores)}")
-                results["vqav2"].append(
-                    {"shots": shot, "trials": scores, "mean": np.nanmean(scores)}
-                )
+                print(f"Shots {shot} Trial {trial} {datastes_name} score: {vqa_score}")
+                scores.append(vqa_score)
 
+        if args.rank == 0:
+            print(f"Shots {shot} Mean {datastes_name} score: {np.nanmean(scores)}")
+            results[datastes_name].append(
+                {"shots": shot, "trials": scores, "mean": np.nanmean(scores)}
+            )
   
     if args.rank == 0 and args.results_file is not None:
         with open(args.results_file, "w") as f:
@@ -122,8 +129,13 @@ def get_query_set(train_dataset, query_set_size, seed):
     query_set = np.random.choice(len(train_dataset), query_set_size, replace=False)
     return [train_dataset[i] for i in query_set]
 
+def prepare_sub_train_dataset(train_dataset, indices_list):
+    sub_dataset = torch.utils.data.Subset(train_dataset, indices_list)
+    return sub_dataset
 
 def prepare_eval_samples(test_dataset, num_samples, batch_size, seed):
+    if len(test_dataset)<num_samples:
+        num_samples = len(test_dataset)
     np.random.seed(seed)
     random_indices = np.random.choice(len(test_dataset), num_samples, replace=False)
     dataset = torch.utils.data.Subset(test_dataset, random_indices)
@@ -145,7 +157,6 @@ def Get_DQQR_TAGs_id(test_question_id, num_samples):
 
 # def sample_batch_demos_from_query_set(query_set, num_samples, batch_size):
 def sample_batch_demos_from_query_set(query_set, num_samples, batch, retrieval_type, clip):
-    # return [random.sample(query_set, num_samples) for _ in range(batch_size)]
     if not clip:
         return [random.sample(list(query_set), num_samples) for _ in range(len(batch["image"]))]
     else:
@@ -170,6 +181,9 @@ def custom_collate_fn(batch):
         collated_batch[key] = [item[key] for item in batch]
     return collated_batch
 
+def get_incorrect_answer(answer_list,correct_answer):
+    candidate_answers = [answer for answer in answer_list if answer != correct_answer]
+    return random.choice(candidate_answers)
 
 def evaluate_vqa(
     args: argparse.Namespace,
@@ -189,6 +203,20 @@ def evaluate_vqa(
         test_image_dir_path = args.vqav2_test_image_dir_path
         test_questions_json_path = args.vqav2_test_questions_json_path
         test_annotations_json_path = args.vqav2_test_annotations_json_path
+    elif dataset_name == "ok_vqa":
+        train_image_dir_path = args.ok_vqa_train_image_dir_path
+        train_questions_json_path = args.ok_vqa_train_questions_json_path
+        train_annotations_json_path = args.ok_vqa_train_annotations_json_path
+        test_image_dir_path = args.ok_vqa_test_image_dir_path
+        test_questions_json_path = args.ok_vqa_test_questions_json_path
+        test_annotations_json_path = args.ok_vqa_test_annotations_json_path
+    elif dataset_name == "vizwiz":
+        train_image_dir_path = args.vizwiz_train_image_dir_path
+        train_questions_json_path = args.vizwiz_train_questions_json_path
+        train_annotations_json_path = args.vizwiz_train_annotations_json_path
+        test_image_dir_path = args.vizwiz_test_image_dir_path
+        test_questions_json_path = args.vizwiz_test_questions_json_path
+        test_annotations_json_path = args.vizwiz_test_annotations_json_path
     else:
         raise ValueError(f"Unsupported dataset: {dataset_name}")
 
@@ -214,15 +242,30 @@ def evaluate_vqa(
     if os.path.exists(train_declaration_path):
         with open(train_declaration_path, 'r') as file:
             train_declaration_datasets = json.load(file)
-    else:print("Train_declaration file not exist")
+    else:
+        print("Train_declaration file not exist")
     if os.path.exists(val_declaration_path):
         with open(val_declaration_path, 'r') as file:
             val_declaration_datasets = json.load(file)
-    else:print("Val_declaration file not exist")
+    else:
+        print("Val_declaration file not exist")
+    # question-answer information
+    question2answer_list_path = f"/open_flamingo/eval/data/{dataset_name}/{dataset_name}_question_to_answer.json"
+    question_id2answer_list_path = f"open_flamingo/eval/data/{dataset_name}/{dataset_name}_question_id2answer.json"
+    # question -> answer_list
+    if os.path.exists(question2answer_list_path):
+        with open(question2answer_list_path, "r") as file:
+            question2answer_list = json.load(file)
+    # question_id -> answer_list
+    if os.path.exists(question_id2answer_list_path):
+        with open(question_id2answer_list_path, "r") as file:
+            question_id2answer_list = json.load(file)
+
 
     control_signals = {"clip": True,
                        "retrieval_name": args.retrieval_name,
                        "retrieval_type": "SI", 
+                       "mismatch_type":"normal", # normal ; answer ; image ; question; question-answer
                        "specification": False,
                        "declaration": False,
                        "add_declaration": False,
@@ -243,14 +286,8 @@ def evaluate_vqa(
         seed,
     )
 
-
-    # random_uuid = "{}_{}_spec{}_{}_{}".format(control_signals["retrieval_type"],
-    #                                        num_shots,
-    #                                        control_signals["specification"],
-    #                                        control_signals["declaration"],
-    #                                        control_signals["order"])
     random_uuid = "{}_{}-shot".format(control_signals["retrieval_name"], num_shots)
-    # in_context_samples = get_query_set(train_dataset, args.query_set_size, seed)
+
     predictions = []
 
     np.random.seed(
@@ -275,6 +312,35 @@ def evaluate_vqa(
                     in_context_samples.reverse()
 
                 if num_shots > 0:
+                    if control_signals["mismatch_type"] != "normal":
+                        for ics in in_context_samples:
+                            random_item = random.choice(train_dataset)
+                            if control_signals["mismatch_type"] == "image":
+                                ics["image"] = random_item["image"]
+                                ics["image_id"] = random_item["image_id"]
+                            if control_signals["mismatch_type"] == "question":
+                                ics["question_id"] = random_item["question_id"]
+                                ics["question"] = random_item["question"]
+                            if control_signals["mismatch_type"] == "question-answer":
+                                ics["question_id"] = random_item["question_id"]
+                                ics["question"] = random_item["question"]
+                                ics["answers"] = random_item["answers"]
+                            if control_signals["mismatch_type"] == "answer":
+                                question_id = ics["question_id"]
+                                answer = ics["answers"][0]
+                                question = ics["question"]
+                                qid = str(question_id)
+                                answer_list_1 = list(set(question2answer_list[question]))
+                                answer_list_2 = question_id2answer_list[qid]
+                                if answer == 'yes':
+                                    incorrect_answer = 'no'
+                                if answer == 'no':
+                                    incorrect_answer = 'yes'
+                                elif len(answer_list_1) > 1:
+                                    incorrect_answer = get_incorrect_answer(answer_list_1, answer)
+                                else:
+                                    incorrect_answer = get_incorrect_answer(answer_list_2, answer)
+                                ics["answers"][0] = incorrect_answer
                     context_images = [x["image"] for x in in_context_samples]
                 else:
                     context_images = []
@@ -287,7 +353,7 @@ def evaluate_vqa(
                     for j in range(len(in_context_samples)):
                         in_context_samples[j]["question"] = train_declaration_datasets.get(str(in_context_samples[j]["question_id"]))
                     batch["question"][i] = val_declaration_datasets.get(str(batch["question_id"][i]))
-
+                    
                 if control_signals["declaration"]:
                     context_text = "".join(
                         [
@@ -354,20 +420,18 @@ def evaluate_vqa(
                 if dataset_name == "ok_vqa"
                 else postprocess_vqa_generation
             )
-            if control_signals["None_ICE"]:
+            if control_signals["declaration"]:
                 process_function = postprocess_new_vqa_generation
-            # if control_signals["declaration"] or control_signals["add_declaration"]:
-            # process_function = postprocess_vqa_declaration_generation
+
 
             new_predictions = map(process_function, outputs)
 
-            # for new_prediction, sample_id in zip(new_predictions, batch["question_id"]):
-            #     predictions.append({"answer": new_prediction, "question_id": sample_id})
             new_predictions = list(new_predictions)
             for i in range(len(batch["image"])):
                 predictions.append({"answer": new_predictions[i], "question_id": batch["question_id"][i],
                                     "prompt_text": batch_text[i],
                                     "prompt_images": [img['image_id'] for img in batch_demo_samples[i]],
+                                    "prompt_question_id": [qui['question_id'] for qui in batch_demo_samples[i]],
                                     "question": batch["question"][i]
                                     })
 

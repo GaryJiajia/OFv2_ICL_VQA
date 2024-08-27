@@ -178,6 +178,7 @@ If you need to use different retrieval methods, you can change the parameters of
 control_signals = {"clip": True, # If clip==False, it means the RS.
                    "retrieval_name": args.retrieval_name, # The results file name.
                    "retrieval_type": "SI", # Name of retrieval methods. SI/SQ/SI_Q...
+                   "mismatch_type":"normal", # The mismatch type:answer/image/question/question-answer.
                    "specification": False, # Add the instruction.
                    "declaration": False, # Add the declarative sentence into the demonstrations.
                    "add_declaration": False,  # Add the declarative sentence into the demonstrations.
