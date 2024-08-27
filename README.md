@@ -2,7 +2,8 @@
 
 The repository for our paper:
 **How to Configure Good In-Context Sequence for Visual Question Answering**
-<a href='https://github.com/GaryJiajia/OFv2_ICL_VQA'><img src='https://img.shields.io/badge/Project-Page-Green'></a> <a href='https://arxiv.org/pdf/2312.01571'><img src='https://img.shields.io/badge/Paper-Arxiv-red'></a> <a herf="https://openaccess.thecvf.com/content/CVPR2024/papers/Li_How_to_Configure_Good_In-Context_Sequence_for_Visual_Question_Answering_CVPR_2024_paper.pdf"><img src='https://img.shields.io/badge/Paper-CVPR-blue'></a>
+
+<a href='https://github.com/GaryJiajia/OFv2_ICL_VQA'><img src='https://img.shields.io/badge/Project-Page-Green'></a> <a href='https://arxiv.org/pdf/2312.01571'><img src='https://img.shields.io/badge/Paper-Arxiv-red'></a> <a href='https://openaccess.thecvf.com/content/CVPR2024/html/Li_How_to_Configure_Good_In-Context_Sequence_for_Visual_Question_Answering_CVPR_2024_paper.html'><img src='https://img.shields.io/badge/Page-CVPR-blue'></a>
 
 # Table of Contents
 - [Preparation](#Preparation)
